@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HGC | Intern Portal</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast-stack"></div>
+
+<div class="app-container visible" id="app-container">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="gem" style="width:30px;height:30px"></span><div><b>HGC</b><small>Intern Portal</small></div></div>
+  <nav>
+    <button class="nav active" data-view="dashboard" id="navDashboard"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+    <button class="nav" data-view="myspace" id="navMySpace"><i data-lucide="user-circle-2"></i> My Space</button>
+    <button class="nav" data-view="activity" id="navActivity"><i data-lucide="calendar-check"></i> Daily Activity</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="nav danger-text" id="logoutBtn"><i data-lucide="log-out"></i> Sign out</button>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div><span class="tag">Portal</span><h1 id="pageTitle">Dashboard</h1></div>
+  <div class="user-box" id="userBox"><div class="avatar" id="avatar">U</div><div><b id="userName">Loading...</b><small id="userRole">Intern</small></div></div>
+</header>
+
+<section id="dashboardView" class="view active">
+  <div class="welcome-banner">
+    <h2 id="greeting">Welcome!</h2>
+  </div>
+  <div class="intern-focus-grid">
+    <div class="card intern-status-card">
+      <div class="section-head"><div><span class="eyebrow">Today</span><h3>Workday status</h3></div><i data-lucide="clock-3" class="card-icon"></i></div>
+      <p id="dashClockStatus" class="status-large">Checking...</p>
+      <div class="action-row"><button class="btn primary sm hidden" id="dashClockInBtn">Clock in</button><button class="btn ghost sm hidden" id="dashClockOutBtn">Clock out</button></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><span class="eyebrow">Your workspace</span><h3>Assigned work</h3></div><i data-lucide="clipboard-list" class="card-icon"></i></div>
+      <div id="assignedWorkList"><p class="muted">Loading your assignments...</p></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><span class="eyebrow">Recent</span><h3>My updates</h3></div><i data-lucide="message-square-text" class="card-icon"></i></div>
+      <div id="myUpdatesList"><p class="muted">Loading your updates...</p></div>
+    </div>
+  </div>
+  <div class="dash-layout">
+    <!-- LEFT COLUMN: Quick Stats & Widgets -->
+    <div class="widget-col">
+      
+      <!-- Holidays Widget -->
+      <div class="widget">
+        <div class="widget-head"><h3>Upcoming Holidays</h3><button class="text-btn" id="openHolidayCalendar">View all</button></div>
+        <button class="holiday-card holiday-trigger" id="holidayCard" type="button">
+          <div>
+            <h4>Mahatma Gandhi Jayanti</h4>
+            <p>Friday, 02 October 2026</p>
+          </div>
+          <i data-lucide="calendar-heart" style="width:32px; color:var(--muted); opacity:0.5;"></i>
+        </button>
+      </div>
+
+      <!-- On Leave Today Widget -->
+      <div class="widget">
+        <div class="widget-head"><h3>On Leave Today</h3></div>
+        <div id="onLeaveWidget">
+          <div class="empty-widget">
+            <i data-lucide="coffee"></i>
+            <span>Everyone is working today!<br>No one is on leave.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Feeds & Organization -->
+    <div class="widget-col">
+      
+      <!-- Organization Tabs -->
+      <div class="widget" style="padding-top:16px;">
+        <div class="tabs">
+          <div class="tab active">Organization</div>
+          <div class="tab">My Operations</div>
+        </div>
+        
+        <!-- Post Input Box (Mimicking the reference image) -->
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); overflow:hidden; margin-bottom: 20px;">
+          <div style="display:flex; gap:16px; padding:12px 16px; background:var(--surface2); border-bottom:1px solid var(--border);">
+            <button class="text-btn" style="display:flex; align-items:center; gap:6px; color:var(--text); font-size:12px;"><i data-lucide="edit-3" style="width:14px;"></i> Post</button>
+            <button class="text-btn" style="display:flex; align-items:center; gap:6px; color:var(--muted); font-size:12px;"><i data-lucide="bar-chart-2" style="width:14px;"></i> Poll</button>
+          </div>
+          <textarea placeholder="Write an announcement or mention your peers..." style="border:none; border-radius:0; background:var(--surface); min-height:80px;"></textarea>
+          <div style="padding:10px 16px; border-top:1px solid var(--border); text-align:right;">
+            <button class="btn primary sm" disabled>Post</button>
+          </div>
+        </div>
+
+        <div class="widget-head" style="border:none; margin-bottom:0;">
+          <h3 style="color:var(--muted); font-weight:500;">Announcements</h3>
+        </div>
+        <div id="announcementsFeed">
+           <div class="empty-widget" style="padding: 40px 0;">
+             <i data-lucide="message-square"></i>
+             <span>No new announcements right now.</span>
+           </div>
+        </div>
+      </div>
+
+      <!-- Employee Events Tabs -->
+      <div class="widget">
+        <div class="tabs">
+          <div class="tab">🎂 Birthdays</div>
+          <div class="tab">🏆 Work Anniversary</div>
+          <div class="tab active">👋 New Joinees</div>
+        </div>
+        <div id="newJoineesWidget" style="padding: 10px 0;">
+          <p class="muted" style="font-size:13px; margin:0 0 12px;">Recent additions to the team:</p>
+          <div class="avatar-group" id="joineesAvatars">
+            <!-- Avatars injected by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+  <div class="card" id="myLeavesCard" style="margin-top:20px;">
+    <div class="section-head">
+      <h3>My Leave Requests</h3>
+      <button class="btn ghost sm" id="openLeaveModalBtn"><i data-lucide="calendar-plus" style="width:14px"></i> Request Leave</button>
+    </div>
+    <div id="dashLeavesList"><p class="muted">Loading...</p></div>
+  </div>
+</section>
+
+<section id="myspaceView" class="view">
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-head"><h3>My details</h3></div>
+      <div class="system-item"><span>Intern ID</span><b id="msInternId">—</b></div>
+      <div class="system-item"><span>Email</span><b id="msEmail">—</b></div>
+      <div class="system-item"><span>Role</span><b id="msRole">—</b></div>
+      <div class="system-item"><span>Status</span><b id="msStatus">—</b></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><h3>My profile</h3></div>
+      <div id="msProfile"><p class="muted">Loading your profile…</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="activityView" class="view">
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-head"><h3>Submit today's activity</h3></div>
+    <p id="activityEditNotice" class="form-message hidden"></p>
+    <form id="activityForm">
+      <div class="form-grid">
+        <label>Date<input id="activityDate" type="date" required></label>
+        <label>Attach files<input id="activityFiles" type="file" multiple></label>
+        <label style="grid-column:1/-1">What did you work on?<textarea id="activityDescription" rows="4" required></textarea></label>
+        <button class="btn primary" type="submit" id="activitySubmitBtn">Submit activity</button><button class="btn ghost hidden" type="button" id="cancelActivityEdit">Cancel edit</button>
+      </div>
+    </form>
+  </div>
+  <div class="card table-card"><div class="table-scroll"><table><thead><tr><th>Date</th><th>User</th><th>Description</th><th>Files</th><th>Actions</th></tr></thead><tbody id="activityTable"></tbody></table></div></div>
+</section>
+</main>
+
+<div id="leaveModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="section-head"><h2>Request Time Off</h2><button class="icon-btn" id="closeLeaveModal"><i data-lucide="x"></i></button></div>
+    <form id="leaveForm" class="form-grid">
+      <label>Start Date<input type="date" id="leaveStart" required></label>
+      <label>End Date<input type="date" id="leaveEnd" required></label>
+      <label style="grid-column:1/-1">Reason<textarea id="leaveReason" rows="3" required></textarea></label>
+      <label class="check" style="grid-column:1/-1; margin-top:10px;"><input type="checkbox" id="leaveUrgent"> <b style="color:var(--danger)">Mark as Urgent</b></label>
+      <button class="btn primary full" type="submit" id="leaveSubmit">Submit Request</button>
+      <p id="leaveMessage" class="form-message"></p>
+    </form>
+  </div>
+</div>
+<div id="holidayModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="section-head"><div><span class="eyebrow">2026 calendar</span><h2>Upcoming holidays</h2></div><button class="icon-btn" id="closeHolidayModal" aria-label="Close calendar"><i data-lucide="x"></i></button></div>
+    <div id="holidayList" class="holiday-list"></div>
+  </div>
+</div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>

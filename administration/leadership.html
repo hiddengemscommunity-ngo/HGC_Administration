@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HGC | Executive Command</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="exec-mode">
+<div id="toast-stack"></div>
+
+<div class="app-container visible" id="app-container">
+<aside class="sidebar" id="sidebar">
+  <button class="sidebar-close" id="sidebarClose" aria-label="Close menu"><i data-lucide="x"></i></button>
+  <div class="brand"><span class="gem" style="width:30px;height:30px"></span><div><b>HGC</b><small>Executive Command</small></div></div>
+  <nav>
+    <button class="nav active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+    <button class="nav" data-view="analytics"><i data-lucide="trending-up"></i> Analytics</button>
+    <button class="nav" data-view="teaminsights"><i data-lucide="users-round"></i> People &amp; Work</button>
+    <button class="nav" data-view="datagrid"><i data-lucide="database"></i> Data Manager</button>
+    <button class="nav" data-view="audit"><i data-lucide="shield-check"></i> Audit Logs</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="nav" id="themeBtn"><i data-lucide="sun-moon"></i> <span id="themeLabel">Dark theme</span></button>
+    <button class="nav danger-text" id="logoutBtn"><i data-lucide="log-out"></i> Sign out</button>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
+    <div><span class="tag">Governance</span><h1 id="pageTitle">Command Center</h1></div>
+  </div>
+  <div class="user-menu" id="userMenu">
+    <button class="user-box executive-profile-trigger" id="userBox" type="button" aria-expanded="false" aria-controls="userDropdown">
+      <span class="profile-avatar-wrap"><span class="avatar profile-avatar" id="avatar"><img id="avatarImage" alt=""><span class="avatar-fallback">L</span></span><span class="online-dot" aria-label="Active"></span></span>
+      <span class="executive-identity"><b id="userName">Loading...</b><small id="userRole">Executive</small></span>
+      <i data-lucide="chevron-down" class="profile-chevron" aria-hidden="true"></i>
+    </button>
+    <div class="user-dropdown executive-dropdown" id="userDropdown" role="menu" aria-label="Executive profile menu">
+      <div class="profile-menu-header">
+        <span class="profile-avatar profile-avatar-large" id="menuAvatar"><img id="menuAvatarImage" alt=""><span class="avatar-fallback">L</span></span>
+        <div><b id="menuUserName">Loading...</b><small id="menuUserRole">Executive</small><span class="profile-status"><i data-lucide="circle-check"></i> Active now</span></div>
+      </div>
+      <div class="profile-contact-list">
+        <div><i data-lucide="mail"></i><span><small>Email</small><b id="menuEmail">Not available</b></span></div>
+        <div><i data-lucide="building-2"></i><span><small>Department</small><b id="menuDepartment">Not available</b></span></div>
+        <div><i data-lucide="contact"></i><span><small>Employee ID</small><b id="menuEmployeeId">Not available</b></span></div>
+      </div>
+      <div class="profile-menu-actions">
+        <button type="button" id="viewProfileBtn" role="menuitem"><i data-lucide="user-round"></i> View full profile</button>
+        <button type="button" id="editProfileBtn" role="menuitem"><i data-lucide="pencil"></i> Edit my profile</button>
+        <button type="button" id="accountSettingsBtn" role="menuitem"><i data-lucide="settings-2"></i> Account settings</button>
+        <button type="button" id="ddLogout" role="menuitem" class="profile-signout"><i data-lucide="log-out"></i> Sign out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="dashboardView" class="view active">
+  <div class="stats">
+    <div class="stat card"><div class="stat-icon c-teal"><i data-lucide="user-check"></i></div><span>Active</span><strong id="activeCount">—</strong></div>
+    <div class="stat card"><div class="stat-icon c-gold"><i data-lucide="calendar-clock"></i></div><span>On leave</span><strong id="leaveCount">—</strong></div>
+    <div class="stat card"><div class="stat-icon c-blue"><i data-lucide="badge-check"></i></div><span>Completed</span><strong id="completedCount">—</strong></div>
+    <div class="stat card"><div class="stat-icon c-violet"><i data-lucide="users"></i></div><span>Total</span><strong id="totalCount">—</strong></div>
+  </div>
+
+  <div class="announcement-panel card" id="announcementPanel">
+    <div class="section-head announcement-panel-head">
+      <div><span class="eyebrow">Leadership broadcast</span><h2>Announcements</h2><p class="muted">Share meeting notes, decisions, and important updates with the team.</p></div>
+      <button class="btn primary sm" id="newAnnouncementBtn" type="button"><i data-lucide="plus" style="width:14px"></i> New announcement</button>
+    </div>
+    <div class="announcement-toolbar">
+      <div class="announcement-filters" role="tablist" aria-label="Announcement filters">
+        <button class="announcement-filter active" type="button" data-announcement-filter="all">All</button>
+        <button class="announcement-filter" type="button" data-announcement-filter="published">Published</button>
+        <button class="announcement-filter" type="button" data-announcement-filter="draft">Drafts</button>
+      </div>
+      <span class="tag" id="announcementCount">Loading...</span>
+    </div>
+    <div id="announcementList" class="announcement-list"><p class="muted">Loading announcements...</p></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Active Leave Approval Queue -->
+    <div class="card" id="leaveQueueCard" style="border-color:var(--gold);">
+      <div class="section-head"><div><h3 style="color:var(--gold)"><i data-lucide="inbox" style="width:18px; margin-right:6px; vertical-align:-3px"></i> Approval Queue</h3></div></div>
+      <div id="pendingLeavesList"><p class="muted">Loading queue...</p></div>
+    </div>
+    <div class="card"><div class="section-head"><h3>Currently away</h3><span class="tag" id="leaveRosterCount">Loading...</span></div><div id="leadershipLeaveRoster"><p class="muted">Loading leave roster...</p></div></div>
+  </div>
+
+  <!-- Executive Insights Row: needs attention, quick actions, live activity — all wired to real data -->
+  <div class="grid-3">
+    <div class="card" style="border-color:var(--danger-bg);">
+      <div class="section-head"><div><h3 style="color:var(--danger)"><i data-lucide="alert-triangle" style="width:18px; margin-right:6px; vertical-align:-3px"></i> Needs Attention</h3></div></div>
+      <div id="execFlagsList"><p class="muted">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><div><h3 style="color:var(--gold)"><i data-lucide="zap" style="width:18px; margin-right:6px; vertical-align:-3px"></i> Quick Actions</h3></div></div>
+      <div class="action-list">
+        <button class="action-btn" id="qaOnboardBtn"><i data-lucide="user-plus"></i> Onboard New Intern</button>
+        <button class="action-btn" id="qaExportBtn"><i data-lucide="file-down"></i> Export Directory (CSV)</button>
+        <button class="action-btn" id="qaAuditBtn"><i data-lucide="shield-check"></i> View Audit Trail</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><div><h3 style="color:var(--accent2)"><i data-lucide="activity" style="width:18px; margin-right:6px; vertical-align:-3px"></i> Live Activity</h3></div></div>
+      <div id="execFeedList"><p class="muted">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><div><h3><i data-lucide="megaphone" style="width:18px; margin-right:6px; vertical-align:-3px"></i> Broadcast Announcement</h3><p class="muted">Post an update for all interns.</p></div></div>
+      <form id="leadershipAnnouncementForm" class="broadcast-form">
+        <label for="announcementText">Announcement</label>
+        <textarea id="announcementText" name="content" rows="4" maxlength="3000" placeholder="Write an update for interns..." required></textarea>
+        <label for="broadcastMeetingLink">Meeting Link (Optional)</label>
+        <input id="broadcastMeetingLink" name="meeting_link" type="url" placeholder="https://...">
+        <button class="btn primary sm" type="submit"><i data-lucide="send" style="width:14px"></i> Post to Interns</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- NEW: ANALYTICS -->
+<section id="analyticsView" class="view">
+  <div class="section-head"><div><h2>Growth &amp; Program Analytics</h2><p class="muted">Live, computed from the Users directory and Leave Requests — no separate reporting table needed.</p></div></div>
+  <div class="stats" id="anaStats">
+    <div class="stat card"><span class="muted">Loading…</span></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-head"><h3>Growth by month</h3><span class="tag">Last 6 months, by joining date</span></div>
+      <div id="anaGrowthChart" class="bar-chart"></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><h3>Role distribution</h3></div>
+      <div id="anaDonut"></div>
+      <div id="anaLegend"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div class="section-head"><h3>On leave this week</h3></div>
+    <div id="anaLeaveWeek"><p class="muted">Loading…</p></div>
+  </div>
+</section>
+
+<section id="teaminsightsView" class="view">
+  <div class="section-head"><div><span class="tag">Leadership view</span><h2>People &amp; Work</h2><p class="muted">See attendance, activity output, and current assignments across the team.</p></div><button class="btn ghost sm" id="refreshTeamInsights"><i data-lucide="refresh-cw" style="width:14px"></i> Refresh</button></div>
+  <div class="stats" id="teamInsightStats"><div class="stat card"><span class="muted">Loading...</span></div></div>
+  <div class="card">
+    <div class="section-head"><h3>Individual work graph</h3><span class="tag">Activity submissions, last 30 days</span></div>
+    <div id="individualWorkGraph" class="individual-work-list"><p class="muted">Loading team activity...</p></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div class="section-head"><h3>Team directory &amp; assignments</h3><input id="teamMemberSearch" class="compact-input" type="search" placeholder="Search people"></div>
+    <div class="table-scroll"><table><thead><tr><th>Person</th><th>Status</th><th>Attendance</th><th>Activities</th><th>Assigned work</th><th>Last update</th></tr></thead><tbody id="teamDirectoryBody"></tbody></table></div>
+  </div>
+</section>
+
+<!-- THE GENERIC DATA MANAGER -->
+<section id="datagridView" class="view">
+  <div class="data-manager-hero">
+    <div><span class="eyebrow">Operations workspace</span><h2 id="dynamicTableTitle">Select a table</h2><p class="muted">Review, search, and maintain the records that power Hidden Gems.</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn ghost sm" id="genericExportBtn"><i data-lucide="download" style="width:14px"></i> Export CSV</button>
+      <button class="btn primary sm" id="genericAddBtn" disabled><i data-lucide="plus" style="width:14px"></i> Add Row</button>
+    </div>
+  </div>
+  <div class="data-manager-stats">
+    <div class="data-manager-stat"><span>Records loaded</span><b id="genericRecordCount">—</b><i data-lucide="layers-3"></i></div>
+    <div class="data-manager-stat"><span>Visible results</span><b id="genericVisibleCount">—</b><i data-lucide="list-filter"></i></div>
+    <div class="data-manager-stat"><span>Last synced</span><b id="genericUpdatedAt">—</b><i data-lucide="refresh-cw"></i></div>
+  </div>
+  <div class="data-visuals-grid" id="dataVisualsPanel">
+    <div class="card data-visual-card data-volume-card">
+      <div class="section-head"><div><span class="eyebrow">At a glance</span><h3>Record volume</h3></div><span class="tag" id="dataVisualPeriod">Current result set</span></div>
+      <div class="visual-total"><strong id="dataVisualTotal">—</strong><span>records loaded</span></div>
+      <div class="mini-bar-chart" id="dataVolumeChart" aria-label="Record volume by time period"></div>
+    </div>
+    <div class="card data-visual-card">
+      <div class="section-head"><div><span class="eyebrow">Distribution</span><h3>Status mix</h3></div><i data-lucide="pie-chart" class="card-icon"></i></div>
+      <div class="status-visual" id="dataStatusVisual"><p class="muted">Select a table to see its distribution.</p></div>
+    </div>
+    <div class="card data-visual-card">
+      <div class="section-head"><div><span class="eyebrow">Signal</span><h3>Top values</h3></div><i data-lucide="bar-chart-3" class="card-icon"></i></div>
+      <div id="dataTopValues" class="top-values"><p class="muted">Select a table to inspect its most common values.</p></div>
+    </div>
+  </div>
+  <div class="card table-card">
+    <div class="toolbar">
+      <div class="data-manager-search"><i data-lucide="search"></i><input id="genericSearch" type="search" placeholder="Search records"></div>
+      <select id="genericTableSelect" style="max-width:300px; margin:0" aria-label="Choose data table">
+        <optgroup label="Core Entities">
+          <option value="users">Users Directory</option>
+          <option value="intern_profiles">Intern Profiles</option>
+          <option value="attendance">Attendance Logs</option>
+          <option value="daily_activities">Daily Activities</option>
+          <option value="leave_requests">Leave Requests</option>
+        </optgroup>
+        <optgroup label="Organization Data">
+          <option value="intern_applications">Intern Applications</option>
+          <option value="volunteers">Volunteers</option>
+          <option value="community_requests">Community Requests</option>
+          <option value="partner_registrations">Partner Registrations</option>
+          <option value="program_registrations">Program Registrations</option>
+          <option value="submissions">Submissions</option>
+          <option value="ttt_registrations">TTT Registrations</option>
+        </optgroup>
+      </select>
+      <button class="btn ghost sm" id="refreshGenericBtn" style="margin-left:auto" title="Refresh data"><i data-lucide="refresh-cw" style="width:14px"></i><span class="refresh-label">Refresh</span></button>
+    </div>
+    <div class="table-scroll">
+      <table id="genericTable">
+        <thead id="genericHead"><tr><th>Loading...</th></tr></thead>
+        <tbody id="genericBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- READ-ONLY AUDIT LOGS -->
+<section id="auditView" class="view">
+  <div class="section-head"><h2>Immutable Audit Logs</h2></div>
+  <div class="card table-card"><div class="table-scroll"><table id="auditTable">
+    <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Table</th><th>Entity ID</th><th>Changes</th></tr></thead>
+    <tbody id="auditTableBody"></tbody>
+  </table></div></div>
+</section>
+</main>
+
+<div id="announcementModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="announcementModalTitle">
+  <div class="modal-card announcement-modal-card">
+    <div class="section-head"><div><span class="eyebrow">Leadership broadcast</span><h2 id="announcementModalTitle">New announcement</h2></div><button class="icon-btn" id="closeAnnouncementModal" type="button" aria-label="Close announcement editor"><i data-lucide="x"></i></button></div>
+    <form id="announcementForm" class="announcement-form">
+      <label>Headline<input id="announcementTitle" name="title" type="text" maxlength="120" placeholder="e.g. All-hands meeting moved to Friday" required></label>
+      <label>Type<select id="announcementCategory" name="category"><option value="meeting">Meeting</option><option value="decision">Decision</option><option value="update">Team update</option><option value="deadline">Deadline</option></select></label>
+      <label class="announcement-form-wide">Meeting Link (Optional)<input id="announcementMeetingLink" name="meeting_link" type="url" placeholder="https://..."></label>
+      <label class="announcement-form-wide">Announcement<textarea id="announcementBody" name="body" rows="7" maxlength="3000" placeholder="Write the details your team needs to know..." required></textarea></label>
+      <label class="announcement-publish-toggle"><input id="announcementPublished" name="is_published" type="checkbox" checked><span><b>Publish now</b><small>Published announcements are visible to the team.</small></span></label>
+      <p id="announcementFormMessage" class="form-message" role="alert"></p>
+      <div class="announcement-form-actions"><button class="btn ghost" id="cancelAnnouncement" type="button">Cancel</button><button class="btn primary" id="saveAnnouncement" type="submit"><i data-lucide="send" style="width:15px"></i> Save announcement</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Dynamic Add/Edit Modal -->
+<div id="genericModal" class="modal hidden">
+  <div class="modal-card" style="width:min(700px, 100%)">
+    <div class="section-head"><h2 id="genericModalTitle">Edit Row</h2><button class="icon-btn" id="closeGenericModal"><i data-lucide="x"></i></button></div>
+    <form id="genericForm" class="form-grid" style="grid-template-columns: 1fr; gap: 16px;">
+      <div id="genericFormInputs" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <button class="btn primary full" type="submit" id="genericFormSubmit">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<div id="executiveProfileModal" class="modal executive-profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalName">
+  <div class="modal-card executive-profile-card">
+    <div class="executive-profile-head">
+      <div class="executive-profile-identity">
+        <span class="profile-avatar profile-avatar-xl" id="modalAvatar"><img id="modalAvatarImage" alt=""><span class="avatar-fallback">L</span></span>
+        <div><span class="profile-status"><i data-lucide="circle-check"></i> Active now</span><h2 id="profileModalName">Executive profile</h2><p id="modalDesignation">Executive</p><span class="role-badge" id="modalRole">Executive</span></div>
+      </div>
+      <button class="icon-btn" id="closeExecutiveProfile" type="button" aria-label="Close executive profile"><i data-lucide="x"></i></button>
+    </div>
+    <p class="profile-headline" id="modalHeadline">Profile information unavailable.</p>
+    <div class="profile-detail-grid">
+      <div class="profile-detail-section"><span class="eyebrow">Contact</span><div class="profile-detail-row"><small>Official email</small><b id="modalEmail">Not available</b></div><div class="profile-detail-row"><small>Contact number</small><b id="modalPhone">Not available</b></div><div class="profile-detail-row"><small>Location</small><b id="modalLocation">Not available</b></div><div class="profile-detail-row"><small>LinkedIn</small><b id="modalLinkedin">Not available</b></div></div>
+      <div class="profile-detail-section"><span class="eyebrow">Professional</span><div class="profile-detail-row"><small>Full name</small><b id="modalFullName">Not available</b></div><div class="profile-detail-row"><small>Preferred name</small><b id="modalPreferredName">Not available</b></div><div class="profile-detail-row"><small>Department</small><b id="modalDepartment">Not available</b></div><div class="profile-detail-row"><small>Joining date</small><b id="modalJoiningDate">Not available</b></div></div>
+    </div>
+    <div class="profile-bio-section"><span class="eyebrow">Biography</span><p id="modalBio">Profile information unavailable.</p></div>
+    <div class="profile-responsibilities"><span class="eyebrow">Areas of responsibility</span><ul id="modalResponsibilities"><li>Profile information unavailable.</li></ul></div>
+  </div>
+</div>
+<div id="executiveEditModal" class="modal executive-profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editProfileTitle">
+  <div class="modal-card executive-edit-card">
+    <div class="section-head"><div><span class="eyebrow">Personal workspace</span><h2 id="editProfileTitle">Edit my profile</h2><p class="muted">Update the details shown in your executive identity.</p></div><button class="icon-btn" id="closeExecutiveEdit" type="button" aria-label="Close edit profile"><i data-lucide="x"></i></button></div>
+    <form id="executiveEditForm" class="executive-edit-form">
+      <div class="edit-profile-grid">
+        <label>Full name<input id="editFullName" name="full_name" type="text" required maxlength="120"></label>
+        <label>Preferred name<input id="editPreferredName" name="preferred_name" type="text" maxlength="80"></label>
+        <label>Phone<input id="editPhone" name="phone" type="tel" maxlength="40"></label>
+        <label>Location<input id="editLocation" name="location" type="text" maxlength="120"></label>
+        <label>Department<input id="editDepartment" name="department" type="text" maxlength="120"></label>
+        <label>Profile image URL<input id="editAvatarUrl" name="avatar_url" type="url" maxlength="500" placeholder="https://..."></label>
+        <label>Professional headline<input id="editHeadline" name="headline" type="text" maxlength="180"></label>
+        <label>LinkedIn URL<input id="editLinkedin" name="linkedin_url" type="url" maxlength="500" placeholder="https://linkedin.com/in/..."></label>
+        <label class="edit-span-two">Short biography<textarea id="editBio" name="bio" rows="4" maxlength="1000"></textarea></label>
+      </div>
+      <p id="executiveEditMessage" class="form-message" role="alert"></p>
+      <div class="executive-edit-actions"><button type="button" class="btn ghost" id="cancelExecutiveEdit">Cancel</button><button type="submit" class="btn primary" id="saveExecutiveEdit"><i data-lucide="check"></i> Save profile</button></div>
+    </form>
+  </div>
+</div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>

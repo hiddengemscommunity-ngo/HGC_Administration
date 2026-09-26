@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HGC | Login</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2333d999'/%3E%3Cstop offset='1' stop-color='%23e7b854'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M24 3l14 9-4 14-10 19-10-19-4-14z'/%3E%3C/svg%3E">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast-stack"></div>
+
+<!-- Portal Picker -->
+<div id="portal-screen">
+  <div class="scene-lights" aria-hidden="true"><span class="crystal crystal-a"></span><span class="crystal crystal-b"></span><span class="crystal crystal-c"></span><span class="crystal crystal-d"></span></div>
+  <svg class="constellation" viewBox="0 0 1200 800" aria-hidden="true"><path d="M36 142L178 84l112 96 156-52 116 124 178-68 126 112 206-86"/><path d="M178 84l56 178 100-82 112 96 152-32 58 154"/><circle cx="36" cy="142" r="3"/><circle cx="178" cy="84" r="4"/><circle cx="290" cy="180" r="3"/><circle cx="446" cy="128" r="3"/><circle cx="562" cy="252" r="4"/><circle cx="740" cy="184" r="3"/><circle cx="866" cy="296" r="3"/><circle cx="1072" cy="210" r="4"/></svg>
+  <section class="portal-stage">
+    <div class="portal-copy">
+      <div class="brand-lockup" style="margin-bottom:20px">
+        <span class="gem" style="width:42px;height:42px"></span>
+        <span class="monogram" style="font-size:22px">HGC</span>
+      </div>
+      <span class="tag">The human potential platform</span>
+      <h1>Welcome to<br><em>Hidden Gems</em></h1>
+      <p class="hero-quote">Every talent has potential.<br>Every journey deserves the right platform.</p>
+      <p class="muted">Choose your workspace to continue.</p>
+    </div>
+    <div class="auth-panel portal-panel">
+      <span class="portal-kicker">Unlock your workspace</span>
+      <div class="portal-grid">
+      <button type="button" class="portal-card" id="pickTeamPortal" aria-label="Open team member workspace">
+        <span class="portal-icon"><i data-lucide="users"></i></span>
+        <span><b>Team Member</b><span>Interns, mentors, &amp; HR — sign in or register.</span></span><i class="portal-chevron" data-lucide="arrow-up-right"></i>
+      </button>
+      <button type="button" class="portal-card exec" id="pickLeadershipPortal" aria-label="Open leadership workspace">
+        <span class="portal-icon"><i data-lucide="crown"></i></span>
+        <span><b>Leadership</b><span>CEO, COO &amp; CTO sign-in.</span></span><i class="portal-chevron" data-lucide="arrow-up-right"></i>
+      </button>
+      </div>
+      <p class="portal-note"><i data-lucide="sparkles"></i> Built for the people shaping what comes next.</p>
+    </div>
+  </section>
+</div>
+
+<!-- Auth Screen -->
+<div id="auth-screen">
+  <div class="auth-shell">
+  <div class="auth-art">
+    <div class="auth-constellation" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="auth-crystal crystal-one" aria-hidden="true"></div><div class="auth-crystal crystal-two" aria-hidden="true"></div><div class="auth-crystal crystal-three" aria-hidden="true"></div>
+    <div class="auth-art-copy">
+      <span class="tag" id="artTag" style="background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.25)">HGC Workspace</span>
+      <h2 id="artHeading">We manage talent,<br>track growth, and<br>protect every record.</h2>
+      <p id="artBody">A secure, audit-ready home for every intern's journey.</p>
+    </div>
+    <div class="art-caption"><span>01</span><span>Discover potential</span><i data-lucide="arrow-up-right"></i></div>
+  </div>
+  <section class="auth-panel">
+    <button type="button" class="icon-btn back-portal-btn" id="backToPortal"><i data-lucide="arrow-left"></i></button>
+    <div id="setupBanner" class="setup-banner hidden"></div>
+    <div class="brand-lockup" style="margin-bottom:20px"><span class="gem" style="width:42px;height:42px"></span><span class="monogram" style="font-size:22px">HGC</span></div>
+
+    <!-- Login Form -->
+    <div id="login-panel">
+      <span class="tag" id="loginTag">Enter your workspace</span>
+      <h1 id="loginHeading">Welcome back</h1>
+      <p class="muted" id="loginSub">Sign in to collaborate.</p>
+      <form id="loginForm">
+        <label>Email<input id="email" type="email" required autofocus></label>
+        <label>Password
+          <div class="password-wrap"><input id="password" type="password" required><button type="button" id="showPassword"></button></div>
+        </label>
+        <div class="auth-links"><a href="#" id="gotoForgot">Forgot password?</a></div>
+        <button class="btn primary full" type="submit" id="loginBtn">Sign in</button>
+        <p id="loginMessage" class="form-message"></p>
+      </form>
+      <div class="auth-switch" id="regSwitchRow">New here? <a href="#" id="gotoRegister">Register as a collaborator</a></div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-panel" class="hidden">
+      <span class="tag">Join Hidden Gems</span>
+      <h1>Create your account</h1>
+      <form id="registerForm">
+        <label>Full name<input id="regName" type="text" required></label>
+        <label>Email<input id="regEmail" type="email" required></label>
+        <label>Password<div class="password-wrap"><input id="regPassword" type="password" required minlength="6"><button type="button" id="showRegPassword"></button></div></label>
+        <label>Confirm password<input id="regConfirm" type="password" required minlength="6"></label>
+        <button class="btn primary full" type="submit" id="registerBtn">Create account</button>
+        <p id="registerMessage" class="form-message"></p>
+      </form>
+      <div class="auth-switch"><a href="#" id="gotoLoginFromRegister">Sign in instead</a></div>
+    </div>
+  </section>
+  </div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>
